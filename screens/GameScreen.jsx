@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 // TODO: Import the following items from the 'react-native' library: Image, Text, View, and TouchableOpacity.
-
+import { Image, Text, View, TouchableOpacity } from 'react-native';
 import { styles } from "../constants/Styles";
 import { nameToPic } from "../constants/Constants";
 import { useEffect } from "react";
@@ -11,7 +11,10 @@ const names = Object.keys(nameToPic);
 
 export default function GameScreen() {
   // TODO: Declare and initialize state variables here, using "useState".
-
+  const [score, setScore] = useState({ correct: 0, total: 0 });
+  const [currentImage, setCurrentImage] = useState(null);
+  const [nameOptions, setNameOptions] = useState([]);
+  const [correctName, setCorrectName] = useState('');
   // State for the timer is handled for you.
   const [timeLeft, setTimeLeft] = useState(5000);
 
@@ -23,6 +26,11 @@ export default function GameScreen() {
     } else {
       // Time has expired
       // TODO: update appropriate state variables
+      setScore((prevScore) => ({
+        correct: prevScore.correct,
+        total: prevScore.total + 1
+      }));
+      getNextRound();
     }
   };
 
@@ -46,13 +54,28 @@ export default function GameScreen() {
     nameOptions = shuffle(nameOptions);
 
     // TODO: Update state here.
-
+    setCurrentImage(correctImage);
+    setNameOptions(nameOptions);
+    setCorrectName(correctName);
     setTimeLeft(5000);
   };
 
   // Called when user taps a name option.
   // TODO: Update correct # and total # state values.
-  const selectedNameChoice = (index) => {};
+  const selectedNameChoice = (index) => {
+    if (nameOptions[index] === correctName) {
+      setScore((prevScore) => ({
+        correct: prevScore.correct + 1,
+        total: prevScore.total + 1
+      }));
+    } else {
+      setScore((prevScore) => ({
+        correct: prevScore.correct,
+        total: prevScore.total + 1
+      }));
+    }
+    getNextRound();
+  };
 
   // Call the countDown() method every 10 milliseconds.
   useEffect(() => {
@@ -68,9 +91,8 @@ export default function GameScreen() {
     () => {
       getNextRound();
     },
-    [
-      /* TODO: Your State Variable Goes Here */
-    ]
+      [score.total]/* TODO: Your State Variable Goes Here */
+    
   );
 
   // Set up four name button components
@@ -86,6 +108,7 @@ export default function GameScreen() {
       >
         <Text style={styles.buttonText}>
           {/* TODO: Use something from state here. (Hint: What do we want inside the buttons?) */}
+          {nameOptions[j]}
         </Text>
       </TouchableOpacity>
     );
@@ -100,6 +123,12 @@ export default function GameScreen() {
       {/* Hint: What does the nameButtons list above hold? 
           What types of objects is this list storing?
           Try to get a sense of what's going on in the for loop above. */}
+      <Image source={currentImage} style={styles.image} />
+      {nameButtons.map((button) => button)}
+      <Text style={styles.scoreText}>
+        Score: {score.correct}/{score.total}
+      </Text>
+      <Text style={styles.timerText}>Time Remaining: {timeRemainingStr}s</Text>
     </View>
   );
 }
